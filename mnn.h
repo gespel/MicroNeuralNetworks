@@ -1,5 +1,6 @@
 #include "stdio.h"
 #include "stdlib.h"
+#include "time.h"
 
 typedef struct {
     int input_size;
@@ -17,6 +18,15 @@ float relu(float x) {
     return x > 0 ? x : 0;
 }
 
+float random_normal() {
+    static int seeded = 0;
+    if (!seeded) {
+        srand((unsigned int)time(NULL));
+        seeded = 1;
+    }
+    return ((float)rand() / RAND_MAX) * 2 - 1; // Random float between -1 and 1
+}
+
 MicroNeuralNetwork* create_mnn(int num_layers, int *layer_sizes) {
     MicroNeuralNetwork *mnn = (MicroNeuralNetwork *)malloc(sizeof(MicroNeuralNetwork));
     mnn->num_layers = num_layers;
@@ -30,20 +40,21 @@ MicroNeuralNetwork* create_mnn(int num_layers, int *layer_sizes) {
         
         // Initialize weights and biases (for simplicity, using random values)
         for (int j = 0; j < layer_sizes[i] * layer_sizes[i + 1]; j++) {
-            mnn->layers[i].weights[j] = ((float)rand() / RAND_MAX) * 2 - 1; // Random weights between -1 and 1
+            mnn->layers[i].weights[j] = random_normal(); // Random weights between -1 and 1
         }
         for (int j = 0; j < layer_sizes[i + 1]; j++) {
-            mnn->layers[i].biases[j] = ((float)rand() / RAND_MAX) * 2 - 1; // Random biases between -1 and 1
+            mnn->layers[i].biases[j] = random_normal(); // Random biases between -1 and 1
         }
     }
     
     return mnn;
 }
 
-float inference(MicroNeuralNetwork *mnn, float *input) {
+float* inference(MicroNeuralNetwork *mnn, float *input) {
     float *current_input = input;
     for (int i = 0; i < mnn->num_layers; i++) {
         Layer *layer = &mnn->layers[i];
+        printf("Layer %d: input size = %d, output size = %d\n", i, layer->input_size, layer->output_size);
         float *output = (float *)malloc(layer->output_size * sizeof(float));
         for (int j = 0; j < layer->output_size; j++) {
             output[j] = layer->biases[j];
@@ -51,8 +62,13 @@ float inference(MicroNeuralNetwork *mnn, float *input) {
                 output[j] += current_input[k] * layer->weights[j * layer->input_size + k];
             }
             output[j] = relu(output[j]);
+
+            for(int k = 0; k < layer->output_size; k++) {
+                printf("Value = %f\n", output[k]);
+            }
+
         }
         current_input = output;
     }
-    return current_input[0]; // Assuming single output for simplicity
+    return current_input; // Return the output of the last layer
 }
