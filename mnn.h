@@ -62,11 +62,6 @@ float* inference(MicroNeuralNetwork *mnn, float *input) {
                 output[j] += current_input[k] * layer->weights[j * layer->input_size + k];
             }
             output[j] = relu(output[j]);
-
-            for(int k = 0; k < layer->output_size; k++) {
-                printf("Value = %f\n", output[k]);
-            }
-
         }
         current_input = output;
     }
