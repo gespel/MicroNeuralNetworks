@@ -67,3 +67,7 @@ float* inference(MicroNeuralNetwork *mnn, float *input) {
     }
     return current_input; // Return the output of the last layer
 }
+
+void backpropagation(MicroNeuralNetwork *mnn, float *input, float *target, float learning_rate) {
+    
+}
