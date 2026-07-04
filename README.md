@@ -1,0 +1,2 @@
+# MicroNeuralNetworks
+MicroNeuralNetworks is a lightweight neural network library designed for efficient training and inference on SmartNICs and other resource-constrained devices. It uses no external dependencies and is optimized for low memory usage and high performance.

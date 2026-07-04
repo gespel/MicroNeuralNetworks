@@ -68,6 +68,18 @@ float* inference(MicroNeuralNetwork *mnn, float *input) {
     return current_input; // Return the output of the last layer
 }
 
-void backpropagation(MicroNeuralNetwork *mnn, float *input, float *target, float learning_rate) {
-    
+void optimize(MicroNeuralNetwork *mnn, float *input, float *target, float learning_rate) {
+    for (int i = mnn->num_layers - 1; i >= 0; i--) {
+        Layer *layer = &mnn->layers[i];
+        float *output = inference(mnn, input);
+        
+        // Compute gradients (for simplicity, using a basic gradient descent approach)
+        for (int j = 0; j < layer->output_size; j++) {
+            float error = output[j] - target[j];
+            for (int k = 0; k < layer->input_size; k++) {
+                layer->weights[j * layer->input_size + k] -= learning_rate * error * input[k];
+            }
+            layer->biases[j] -= learning_rate * error;
+        }
+    }
 }
