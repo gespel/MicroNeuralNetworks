@@ -54,7 +54,7 @@ float* inference(MicroNeuralNetwork *mnn, float *input) {
     float *current_input = input;
     for (int i = 0; i < mnn->num_layers; i++) {
         Layer *layer = &mnn->layers[i];
-        printf("Layer %d: input size = %d, output size = %d\n", i, layer->input_size, layer->output_size);
+        //printf("Layer %d: input size = %d, output size = %d\n", i, layer->input_size, layer->output_size);
         float *output = (float *)malloc(layer->output_size * sizeof(float));
         for (int j = 0; j < layer->output_size; j++) {
             output[j] = layer->biases[j];
