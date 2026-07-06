@@ -16,6 +16,7 @@ int main() {
     }
 
     printf("After optimization:\n");
-    printf("Inference result: %f\n", output[0], output[1]);
+    output = inference(mnn, input);
+    printf("Inference result: %f\n", output[0]);
     
 }
