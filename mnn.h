@@ -50,6 +50,22 @@ MicroNeuralNetwork* create_mnn(int num_layers, int *layer_sizes) {
     return mnn;
 }
 
+void load_weights_from_file(MicroNeuralNetwork *mnn, const char *filename) {
+    FILE *file = fopen(filename, "rb");
+    if (!file) {
+        printf("Error opening file: %s\n", filename);
+        return;
+    }
+    
+    for (int i = 0; i < mnn->num_layers; i++) {
+        Layer *layer = &mnn->layers[i];
+        fread(layer->weights, sizeof(float), layer->input_size * layer->output_size, file);
+        fread(layer->biases, sizeof(float), layer->output_size, file);
+    }
+    
+    fclose(file);
+}
+
 float* inference(MicroNeuralNetwork *mnn, float *input) {
     float *current_input = input;
     for (int i = 0; i < mnn->num_layers; i++) {
