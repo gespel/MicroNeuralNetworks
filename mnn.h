@@ -90,4 +90,13 @@ static inline void optimize(MicroNeuralNetwork *mnn, float *input, float *target
     }
 }
 
+static inline float get_model_memory_size(MicroNeuralNetwork *mnn) {
+    float size = sizeof(MicroNeuralNetwork);
+    for (int i = 0; i < mnn->num_layers; i++) {
+        size += mnn->layers[i].input_size * mnn->layers[i].output_size * sizeof(float); // weights
+        size += mnn->layers[i].output_size * sizeof(float); // biases
+    }
+    return size / (1024 * 1024); // Return size in MB
+}
+
 #endif /* MNN_H */
