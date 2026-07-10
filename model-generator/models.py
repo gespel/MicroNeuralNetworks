@@ -14,6 +14,7 @@ class AdditionNet(torch.nn.Module):
     
 
 class AnomalyDetectionNet(torch.nn.Module):
+    # This is a simple autoencoder for anomaly detection. It takes an input of size 10, compresses it to a latent space of size 8, and then reconstructs it back to the original size.
     def __init__(self):
         super().__init__()
         self.layer = torch.nn.Sequential(
