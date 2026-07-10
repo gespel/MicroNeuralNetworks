@@ -33,7 +33,7 @@ def pytorch_model_to_c_mnn(model):
 
 def train_model(x, y, model, epochs=1000, learning_rate=0.01):
     x = torch.tensor(x, dtype=torch.float32)
-    y = torch.tensor(y, dtype=torch.float32).unsqueeze(1)
+    y = torch.tensor(y, dtype=torch.float32)
     for epoch in tqdm.tqdm(range(epochs), desc="Training", unit="epoch"):
         
         loss = torch.nn.functional.mse_loss(model(x), y)
@@ -48,14 +48,14 @@ def main():
     m = AdditionNet()
 
     x = [[randint(0, 9), randint(0, 9)] for _ in range(100)]
-    y = [a[0] + a[1] for a in x]
+    y = [[a[0] + a[1]] for a in x]
     
     train_model(x, y, m, epochs=10000, learning_rate=0.01)
 
     print("Test input: ", torch.tensor([[1.0, 5.0]]))
     print("Test output: ", m(torch.tensor([[1.0, 5.0]])))
 
-    print(pytorch_model_to_c_mnn(m))
+    #print(pytorch_model_to_c_mnn(m))
 
 
 if __name__ == "__main__":
