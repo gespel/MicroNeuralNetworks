@@ -33,9 +33,6 @@ def pytorch_model_to_c_mnn(model):
 
 
 def main():
-<<<<<<< HEAD
-    m = AdditionNet()
-=======
     m = TestNet()
 
     for epoch in tqdm.tqdm(range(100000)):
@@ -53,7 +50,6 @@ def main():
     print("Test input: ", torch.tensor([[1.0, 5.0]]))
     print("Test output: ", m(torch.tensor([[1.0, 5.0]])))
 
->>>>>>> a834301725973dcfcd29cbed8bea03c57fe94ab4
     print(pytorch_model_to_c_mnn(m))
 
 
