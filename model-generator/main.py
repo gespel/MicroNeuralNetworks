@@ -31,21 +31,26 @@ def pytorch_model_to_c_mnn(model):
 
     return c_code
 
-
-def main():
-    m = TestNet()
-
-    for epoch in tqdm.tqdm(range(100000)):
-        x = [[randint(0, 9), randint(0, 9)] for _ in range(100)]
-        y = [a[0] + a[1] for a in x]  # Simple sum of inputs as target
-        x = torch.tensor(x, dtype=torch.float32)
-        y = torch.tensor(y, dtype=torch.float32).unsqueeze(1)
-        loss = torch.nn.functional.mse_loss(m(x), y)
+def train_model(x, y, model, epochs=1000, learning_rate=0.01):
+    x = torch.tensor(x, dtype=torch.float32)
+    y = torch.tensor(y, dtype=torch.float32).unsqueeze(1)
+    for epoch in tqdm.tqdm(range(epochs), desc="Training", unit="epoch"):
+        
+        loss = torch.nn.functional.mse_loss(model(x), y)
         loss.backward()
         with torch.no_grad():
-            for param in m.parameters():
-                param -= 0.01 * param.grad
+            for param in model.parameters():
+                param -= learning_rate * param.grad
                 param.grad.zero_()
+
+
+def main():
+    m = AdditionNet()
+
+    x = [[randint(0, 9), randint(0, 9)] for _ in range(100)]
+    y = [a[0] + a[1] for a in x]
+    
+    train_model(x, y, m, epochs=10000, learning_rate=0.01)
 
     print("Test input: ", torch.tensor([[1.0, 5.0]]))
     print("Test output: ", m(torch.tensor([[1.0, 5.0]])))

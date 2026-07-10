@@ -11,3 +11,24 @@ class AdditionNet(torch.nn.Module):
 
     def forward(self, x):
         return self.layer(x)
+    
+
+class AnomalyDetectionNet(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.layer = torch.nn.Sequential(
+            torch.nn.Linear(10, 16),
+            torch.nn.ReLU(),
+            torch.nn.Linear(16, 8),
+            torch.nn.ReLU(),
+            torch.nn.Linear(8, 1),
+            torch.nn.ReLU(),
+            torch.nn.Linear(1, 8),
+            torch.nn.ReLU(),
+            torch.nn.Linear(8, 16),
+            torch.nn.ReLU(),
+            torch.nn.Linear(16, 10),
+        )
+
+    def forward(self, x):
+        return self.layer(x)
