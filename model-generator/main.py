@@ -1,17 +1,5 @@
 import torch
-
-
-class TestNet(torch.nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.layer = torch.nn.Sequential(
-            torch.nn.Linear(2, 4),
-            torch.nn.ReLU(),
-            torch.nn.Linear(4, 1),
-        )
-
-    def forward(self, x):
-        return self.layer(x)
+from models import *
 
 def pytorch_model_to_c_mnn(model):
     c_code = ""
@@ -27,7 +15,7 @@ def pytorch_model_to_c_mnn(model):
     return c_code
 
 def main():
-    m = TestNet()
+    m = AdditionNet()
     print(pytorch_model_to_c_mnn(m))
 
 
