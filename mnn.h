@@ -99,4 +99,11 @@ static inline float get_model_memory_size(MicroNeuralNetwork *mnn) {
     return size / (1024 * 1024); // Return size in MB
 }
 
+static inline float normalize_packet(float value, float min, float max) {
+    if (max - min == 0) {
+        return 0.0f; // Avoid division by zero
+    }
+    return (value - min) / (max - min);
+}
+
 #endif /* MNN_H */
