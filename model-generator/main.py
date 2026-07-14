@@ -68,7 +68,7 @@ def main():
     x = [[randint(0, 9), randint(0, 9)] for _ in range(100)]
     y = [[a[0] + a[1]] for a in x]
     
-    train_model(x, y, m, epochs=10000, learning_rate=0.01)
+    train_model(x, y, m, epochs=100000, learning_rate=0.0001)
 
     print("Test input: ", torch.tensor([[1.0, 5.0]]))
     print("Test output: ", m(torch.tensor([[1.0, 5.0]])))
