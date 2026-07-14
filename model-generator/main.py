@@ -5,8 +5,26 @@ import tqdm
 import torch
 from models import *
 
-def pytorch_model_to_c_mnn(model):
+def pytorch_model_to_c_mnn(model, packet_meta_data: dict = None):
     c_code = ""
+    if packet_meta_data:
+        c_code += f"#define MNN_MAX_PACKET_SIZE {packet_meta_data.get('max_packet_size', 1518)}\n"
+        c_code += f"#define MNN_MIN_PACKET_SIZE {packet_meta_data.get('min_packet_size', 64)}\n"
+        c_code += f"#define MNN_MAX_TTL {packet_meta_data.get('max_ttl', 255)}\n"
+        c_code += f"#define MNN_MIN_TTL {packet_meta_data.get('min_ttl', 0)}\n"
+        c_code += f"#define MNN_MAX_PROTOCOL {packet_meta_data.get('max_protocol', 255)}\n"
+        c_code += f"#define MNN_MIN_PROTOCOL {packet_meta_data.get('min_protocol', 0)}\n"
+        c_code += f"#define MNN_MAX_SRC_PORT {packet_meta_data.get('max_src_port', 65535)}\n"
+        c_code += f"#define MNN_MIN_SRC_PORT {packet_meta_data.get('min_src_port', 0)}\n"
+        c_code += f"#define MNN_MAX_DST_PORT {packet_meta_data.get('max_dst_port', 65535)}\n"
+        c_code += f"#define MNN_MIN_DST_PORT {packet_meta_data.get('min_dst_port', 0)}\n"
+        c_code += f"#define MNN_MAX_TCP_FLAGS {packet_meta_data.get('max_tcp_flags', 255)}\n"
+        c_code += f"#define MNN_MIN_TCP_FLAGS {packet_meta_data.get('min_tcp_flags', 0)}\n"
+        c_code += f"#define MNN_MAX_PAYLOAD_SIZE {packet_meta_data.get('max_payload_size', 1500)}\n"
+        c_code += f"#define MNN_MIN_PAYLOAD_SIZE {packet_meta_data.get('min_payload_size', 0)}\n"
+        c_code += f"#define MNN_MAX_TCP_WINDOW {packet_meta_data.get('max_tcp_window', 65535)}\n"
+        c_code += f"#define MNN_MIN_TCP_WINDOW {packet_meta_data.get('min_tcp_window', 0)}\n"
+
     i = 0
     for layer in model.layer:
         if isinstance(layer, torch.nn.Linear):
