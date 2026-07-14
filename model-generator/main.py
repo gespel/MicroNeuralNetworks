@@ -17,7 +17,7 @@ def pytorch_model_to_c_mnn(model):
             c_code += f"float b{i}[] = {{{', '.join(map(str, biases))}}};\n\n"
             i += 1
 
-    c_code += "MicroNeuralNetwork mnn = {0};\n"
+    c_code += "static MicroNeuralNetwork mnn = {0};\n"
     c_code += f"mnn.num_layers = {i};\n\n"
     
     j = 0
