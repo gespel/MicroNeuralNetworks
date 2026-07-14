@@ -18,6 +18,70 @@
 #define MNN_MAX_LAYER_SIZE 64
 #endif
 
+#ifndef MNN_MAX_PACKET_SIZE
+#define MNN_MAX_PACKET_SIZE 1518
+#endif
+
+#ifndef MNN_MAX_TTL
+#define MNN_MAX_TTL 255
+#endif
+
+#ifndef MNN_MAX_PROTOCOL
+#define MNN_MAX_PROTOCOL 255
+#endif
+
+#ifndef MNN_MAX_SRC_PORT
+#define MNN_MAX_SRC_PORT 65535
+#endif
+
+#ifndef MNN_MAX_DST_PORT
+#define MNN_MAX_DST_PORT 65535
+#endif
+
+#ifndef MNN_MAX_TCP_FLAGS
+#define MNN_MAX_TCP_FLAGS 255
+#endif
+
+#ifndef MNN_MAX_PAYLOAD_SIZE
+#define MNN_MAX_PAYLOAD_SIZE 1500
+#endif
+
+#ifndef MNN_MAX_TCP_WINDOW
+#define MNN_MAX_TCP_WINDOW 65535
+#endif
+
+#ifndef MNN_MIN_PACKET_SIZE
+#define MNN_MIN_PACKET_SIZE 0
+#endif
+
+#ifndef MNN_MIN_TTL
+#define MNN_MIN_TTL 0
+#endif
+
+#ifndef MNN_MIN_PROTOCOL
+#define MNN_MIN_PROTOCOL 0
+#endif
+
+#ifndef MNN_MIN_SRC_PORT
+#define MNN_MIN_SRC_PORT 0
+#endif
+
+#ifndef MNN_MIN_DST_PORT
+#define MNN_MIN_DST_PORT 0
+#endif
+
+#ifndef MNN_MIN_TCP_FLAGS
+#define MNN_MIN_TCP_FLAGS 0
+#endif
+
+#ifndef MNN_MIN_PAYLOAD_SIZE
+#define MNN_MIN_PAYLOAD_SIZE 0
+#endif
+
+#ifndef MNN_MIN_TCP_WINDOW
+#define MNN_MIN_TCP_WINDOW 0
+#endif
+
 typedef struct {
     int input_size;
     int output_size;
