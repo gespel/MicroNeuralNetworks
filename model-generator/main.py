@@ -1,5 +1,6 @@
 from random import randint
-
+import numpy as np
+import pandas as pd
 import tqdm
 
 import torch
@@ -23,7 +24,7 @@ def pytorch_model_to_c_mnn(model, packet_meta_data: dict = None):
         c_code += f"#define MNN_MAX_PAYLOAD_SIZE {packet_meta_data.get('max_payload_size', 1500)}\n"
         c_code += f"#define MNN_MIN_PAYLOAD_SIZE {packet_meta_data.get('min_payload_size', 0)}\n"
         c_code += f"#define MNN_MAX_TCP_WINDOW {packet_meta_data.get('max_tcp_window', 65535)}\n"
-        c_code += f"#define MNN_MIN_TCP_WINDOW {packet_meta_data.get('min_tcp_window', 0)}\n"
+        c_code += f"#define MNN_MIN_TCP_WINDOW {packet_meta_data.get('min_tcp_window', 0)}\n\n"
 
     i = 0
     for layer in model.layer:
@@ -63,17 +64,45 @@ def train_model(x, y, model, epochs=1000, learning_rate=0.01):
 
 
 def main():
-    m = AdditionNet()
+    m = NetworkAnomalyDetectionNet()
 
-    x = [[randint(0, 9), randint(0, 9)] for _ in range(100)]
-    y = [[a[0] + a[1]] for a in x]
-    
+    data_csv = pd.read_csv("features.csv")
+
+    print(f"[*] Loaded {len(data_csv)} rows from features.csv")
+    print(f"[*] DataFrame Shape: {data_csv.shape}")
+    print(f"[*] DataFrame Columns: {data_csv.columns.tolist()}")
+
+    # Autoencoder: Eingabe == Ziel (Rekonstruktion der Netzwerk-Features)
+    x = data_csv.to_numpy(dtype=np.float32)
+    y = x.copy()
+
+    print(f"[*] Training model with {x.shape[0]} samples and {x.shape[1]} features...")
+
     train_model(x, y, m, epochs=100000, learning_rate=0.0001)
 
-    print("Test input: ", torch.tensor([[1.0, 5.0]]))
-    print("Test output: ", m(torch.tensor([[1.0, 5.0]])))
-
-    #print(pytorch_model_to_c_mnn(m))
+    # Optional: Konvertiere trainiertes Modell in C-Code für mnn.h
+    packet_meta_data = {
+        "max_packet_size": int(data_csv["packet_size"].max() * 1518),
+        "min_packet_size": int(data_csv["packet_size"].min() * 1518),
+        "max_ttl": int(data_csv["ttl"].max() * 255),
+        "min_ttl": int(data_csv["ttl"].min() * 255),
+        "max_protocol": 255,
+        "min_protocol": 0,
+        "max_src_port": 65535,
+        "min_src_port": 0,
+        "max_dst_port": 65535,
+        "min_dst_port": 0,
+        "max_tcp_flags": 255,
+        "min_tcp_flags": 0,
+        "max_payload_size": int(data_csv["payload_size"].max() * 1500),
+        "min_payload_size": int(data_csv["payload_size"].min() * 1500),
+        "max_tcp_window": 65535,
+        "min_tcp_window": 0,
+    }
+    c_code = pytorch_model_to_c_mnn(m, packet_meta_data)
+    with open("model.c", "w") as f:
+        f.write(c_code)
+    print("[+] C-Modell in model.c gespeichert.")
 
 
 if __name__ == "__main__":
