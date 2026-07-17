@@ -83,22 +83,22 @@ def main():
 
     # Optional: Konvertiere trainiertes Modell in C-Code für mnn.h
     packet_meta_data = {
-        "max_packet_size": int(data_csv["packet_size"].max()),
-        "min_packet_size": int(data_csv["packet_size"].min()),
-        "max_ttl": int(data_csv["ttl"].max()),
-        "min_ttl": int(data_csv["ttl"].min()),
-        "max_protocol": int(data_csv["protocol"].max()),
-        "min_protocol": int(data_csv["protocol"].min()),
-        "max_src_port": int(data_csv["src_port"].max()),
-        "min_src_port": int(data_csv["src_port"].min()),
-        "max_dst_port": int(data_csv["dst_port"].max()),
-        "min_dst_port": int(data_csv["dst_port"].min()),
-        "max_tcp_flags": int(data_csv["flags"].max()),
-        "min_tcp_flags": int(data_csv["flags"].min()),
-        "max_payload_size": int(data_csv["payload_size"].max()),
-        "min_payload_size": int(data_csv["payload_size"].min()),
-        "max_tcp_window": int(data_csv["tcp_window"].max()),
-        "min_tcp_window": int(data_csv["tcp_window"].min()),
+        "max_packet_size": float(data_csv["packet_size"].max()),
+        "min_packet_size": float(data_csv["packet_size"].min()),
+        "max_ttl": float(data_csv["ttl"].max()),
+        "min_ttl": float(data_csv["ttl"].min()),
+        "max_protocol": float(data_csv["protocol"].max()),
+        "min_protocol": float(data_csv["protocol"].min()),
+        "max_src_port": float(data_csv["src_port"].max()),
+        "min_src_port": float(data_csv["src_port"].min()),
+        "max_dst_port": float(data_csv["dst_port"].max()),
+        "min_dst_port": float(data_csv["dst_port"].min()),
+        "max_tcp_flags": float(data_csv["flags"].max()),
+        "min_tcp_flags": float(data_csv["flags"].min()),
+        "max_payload_size": float(data_csv["payload_size"].max()),
+        "min_payload_size": float(data_csv["payload_size"].min()),
+        "max_tcp_window": float(data_csv["tcp_window"].max()),
+        "min_tcp_window": float(data_csv["tcp_window"].min()),
     }
     c_code = pytorch_model_to_c_mnn(m, packet_meta_data)
     with open("model.c", "w") as f:
