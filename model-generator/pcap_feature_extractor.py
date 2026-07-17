@@ -64,7 +64,7 @@ def extract_features(packets):
     return features_list
 
 
-def features_to_dataframe(features_list, normalize=True):
+def features_to_dataframe(features_list, normalize=True, min=None, max=None):
     """
     Konvertiert Feature-Liste zu Pandas DataFrame.
     
@@ -74,18 +74,18 @@ def features_to_dataframe(features_list, normalize=True):
     
     if normalize:
         # Min-Max Normalisierung auf [0, 1]
-        df = normalize_features_df(df)
+        df = normalize_features_df(df, min=min, max=max)
     
     return df
 
 
-def normalize_features_df(df):
+def normalize_features_df(df, min=None, max=None):
     """Normalisiert Features auf [0, 1] (Min-Max Normalisierung)."""
     df_normalized = df.copy()
     
     for col in df.columns:
-        min_val = df[col].min()
-        max_val = df[col].max()
+        min_val = df[col].min() if min is None else min
+        max_val = df[col].max() if max is None else max
         range_val = max_val - min_val
         
         if range_val == 0:

@@ -125,14 +125,16 @@ def main():
         from scapy.all import sniff
         m = NetworkAnomalyDetectionNet()
         m.load_state_dict(torch.load("output/model.pth"))
+        m.eval()
 
         def infer_packet(packet):
             features = extract_features([packet])[0]
-            df = features_to_dataframe([features], normalize=True)
+            df = features_to_dataframe([features], normalize=True, min=0, max=1)
             x = torch.tensor(df.to_numpy(dtype=np.float32))
             output = m(x)
             diff = torch.abs(x - output)
             anomaly_score = torch.mean(diff).item()
+            print(f"[*] Difference: {diff.detach().numpy()}")
             print(f"[*] Anomaly Score: {anomaly_score:.6f}")
 
         s = sniff(iface="wlan0", prn=lambda x: infer_packet(x))
