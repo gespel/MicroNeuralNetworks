@@ -2,9 +2,11 @@ from random import randint
 import numpy as np
 import pandas as pd
 import tqdm
-
+import argparse
 import torch
 from models import *
+import os
+from pcap_feature_extractor import extract_features, features_to_dataframe
 
 def pytorch_model_to_c_mnn(model, packet_meta_data: dict = None):
     c_code = ""
@@ -65,45 +67,77 @@ def train_model(x, y, model, epochs=1000, learning_rate=0.01):
         progress_bar.set_postfix(loss=f"{loss.item():.6f}")
 
 def main():
-    m = NetworkAnomalyDetectionNet()
+    a = argparse.ArgumentParser(description="Train a neural network for network anomaly detection or inference.")
+    a.add_argument("--train", action="store_true", help="Train the model with features.csv")
+    a.add_argument("--inference", action="store_true", help="Run active monitor inference")
+    args = a.parse_args()
 
-    data_csv = pd.read_csv("features.csv")
+    if args.train:
+        m = NetworkAnomalyDetectionNet()
 
-    print(f"[*] Loaded {len(data_csv)} rows from features.csv")
-    print(f"[*] DataFrame Shape: {data_csv.shape}")
-    print(f"[*] DataFrame Columns: {data_csv.columns.tolist()}")
+        data_csv = pd.read_csv("features.csv")
 
-    # Autoencoder: Eingabe == Ziel (Rekonstruktion der Netzwerk-Features)
-    x = data_csv.to_numpy(dtype=np.float32)
-    y = x.copy()
+        print(f"[*] Loaded {len(data_csv)} rows from features.csv")
+        print(f"[*] DataFrame Shape: {data_csv.shape}")
+        print(f"[*] DataFrame Columns: {data_csv.columns.tolist()}")
 
-    print(f"[*] Training model with {x.shape[0]} samples and {x.shape[1]} features...")
+        # Autoencoder: Eingabe == Ziel (Rekonstruktion der Netzwerk-Features)
+        x = data_csv.to_numpy(dtype=np.float32)
+        y = x.copy()
 
-    train_model(x, y, m, epochs=10000, learning_rate=0.0001)
+        print(f"[*] Training model with {x.shape[0]} samples and {x.shape[1]} features...")
 
-    # Optional: Konvertiere trainiertes Modell in C-Code für mnn.h
-    packet_meta_data = {
-        "max_packet_size": float(data_csv["packet_size"].max()),
-        "min_packet_size": float(data_csv["packet_size"].min()),
-        "max_ttl": float(data_csv["ttl"].max()),
-        "min_ttl": float(data_csv["ttl"].min()),
-        "max_protocol": float(data_csv["protocol"].max()),
-        "min_protocol": float(data_csv["protocol"].min()),
-        "max_src_port": float(data_csv["src_port"].max()),
-        "min_src_port": float(data_csv["src_port"].min()),
-        "max_dst_port": float(data_csv["dst_port"].max()),
-        "min_dst_port": float(data_csv["dst_port"].min()),
-        "max_tcp_flags": float(data_csv["flags"].max()),
-        "min_tcp_flags": float(data_csv["flags"].min()),
-        "max_payload_size": float(data_csv["payload_size"].max()),
-        "min_payload_size": float(data_csv["payload_size"].min()),
-        "max_tcp_window": float(data_csv["tcp_window"].max()),
-        "min_tcp_window": float(data_csv["tcp_window"].min()),
-    }
-    c_code = pytorch_model_to_c_mnn(m, packet_meta_data)
-    with open("model.c", "w") as f:
-        f.write(c_code)
-    print("[+] C-Modell in model.c gespeichert.")
+        train_model(x, y, m, epochs=10000, learning_rate=0.0001)
+
+        # Optional: Konvertiere trainiertes Modell in C-Code für mnn.h
+        packet_meta_data = {
+            "max_packet_size": float(data_csv["packet_size"].max()),
+            "min_packet_size": float(data_csv["packet_size"].min()),
+            "max_ttl": float(data_csv["ttl"].max()),
+            "min_ttl": float(data_csv["ttl"].min()),
+            "max_protocol": float(data_csv["protocol"].max()),
+            "min_protocol": float(data_csv["protocol"].min()),
+            "max_src_port": float(data_csv["src_port"].max()),
+            "min_src_port": float(data_csv["src_port"].min()),
+            "max_dst_port": float(data_csv["dst_port"].max()),
+            "min_dst_port": float(data_csv["dst_port"].min()),
+            "max_tcp_flags": float(data_csv["flags"].max()),
+            "min_tcp_flags": float(data_csv["flags"].min()),
+            "max_payload_size": float(data_csv["payload_size"].max()),
+            "min_payload_size": float(data_csv["payload_size"].min()),
+            "max_tcp_window": float(data_csv["tcp_window"].max()),
+            "min_tcp_window": float(data_csv["tcp_window"].min()),
+        }
+        c_code = pytorch_model_to_c_mnn(m, packet_meta_data)
+
+        if not os.path.exists("output"):
+            os.makedirs("output")
+
+        torch.save(m.state_dict(), "output/model.pth")
+        print("[+] PyTorch-Modell in output/model.pth gespeichert.")
+
+        with open("output/model.c", "w") as f:
+            f.write(c_code)
+        print("[+] C-Modell in output/model.c gespeichert.")
+
+    if args.inference:
+        # scapy for packet capture and feature extraction
+        from scapy.all import sniff
+        m = NetworkAnomalyDetectionNet()
+        m.load_state_dict(torch.load("output/model.pth"))
+
+        def infer_packet(packet):
+            features = extract_features([packet])[0]
+            df = features_to_dataframe([features], normalize=True)
+            x = torch.tensor(df.to_numpy(dtype=np.float32))
+            output = m(x)
+            diff = torch.abs(x - output)
+            anomaly_score = torch.mean(diff).item()
+            print(f"[*] Anomaly Score: {anomaly_score:.6f}")
+
+        s = sniff(iface="wlan0", prn=lambda x: infer_packet(x))
+
+        print(s)
 
 
 if __name__ == "__main__":
