@@ -53,7 +53,8 @@ def pytorch_model_to_c_mnn(model, packet_meta_data: dict = None):
 def train_model(x, y, model, epochs=1000, learning_rate=0.01):
     x = torch.tensor(x, dtype=torch.float32)
     y = torch.tensor(y, dtype=torch.float32)
-    for epoch in tqdm.tqdm(range(epochs), desc="Training", unit="epoch"):
+    progress_bar = tqdm.tqdm(range(epochs), desc="Training", unit="epoch")
+    for epoch in progress_bar:
         
         loss = torch.nn.functional.mse_loss(model(x), y)
         loss.backward()
@@ -61,7 +62,7 @@ def train_model(x, y, model, epochs=1000, learning_rate=0.01):
             for param in model.parameters():
                 param -= learning_rate * param.grad
                 param.grad.zero_()
-
+        progress_bar.set_postfix(loss=f"{loss.item():.6f}")
 
 def main():
     m = NetworkAnomalyDetectionNet()
@@ -78,7 +79,7 @@ def main():
 
     print(f"[*] Training model with {x.shape[0]} samples and {x.shape[1]} features...")
 
-    train_model(x, y, m, epochs=100000, learning_rate=0.0001)
+    train_model(x, y, m, epochs=10000, learning_rate=0.0001)
 
     # Optional: Konvertiere trainiertes Modell in C-Code für mnn.h
     packet_meta_data = {
@@ -92,8 +93,8 @@ def main():
         "min_src_port": int(data_csv["src_port"].min()),
         "max_dst_port": int(data_csv["dst_port"].max()),
         "min_dst_port": int(data_csv["dst_port"].min()),
-        "max_tcp_flags": int(data_csv["tcp_flags"].max()),
-        "min_tcp_flags": int(data_csv["tcp_flags"].min()),
+        "max_tcp_flags": int(data_csv["flags"].max()),
+        "min_tcp_flags": int(data_csv["flags"].min()),
         "max_payload_size": int(data_csv["payload_size"].max()),
         "min_payload_size": int(data_csv["payload_size"].min()),
         "max_tcp_window": int(data_csv["tcp_window"].max()),
