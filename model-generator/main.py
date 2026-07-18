@@ -7,6 +7,8 @@ import torch
 from models import *
 import os
 from pcap_feature_extractor import extract_features, features_to_dataframe
+import logging
+import termcolor
 
 def pytorch_model_to_c_mnn(model, packet_meta_data: dict = None):
     c_code = ""
@@ -67,6 +69,9 @@ def train_model(x, y, model, epochs=1000, learning_rate=0.01):
         progress_bar.set_postfix(loss=f"{loss.item():.6f}")
 
 def main():
+    logger = logging.getLogger("model-generator")
+    logging.basicConfig(level=logging.INFO)
+
     a = argparse.ArgumentParser(description="Train a neural network for network anomaly detection or inference.")
     a.add_argument("--train", action="store_true", help="Train the model with features.csv")
     a.add_argument("--inference", action="store_true", help="Run active monitor inference")
@@ -77,15 +82,15 @@ def main():
 
         data_csv = pd.read_csv("features.csv")
 
-        print(f"[*] Loaded {len(data_csv)} rows from features.csv")
-        print(f"[*] DataFrame Shape: {data_csv.shape}")
-        print(f"[*] DataFrame Columns: {data_csv.columns.tolist()}")
+        logger.info(termcolor.colored(f"Loaded {len(data_csv)} rows from features.csv", "green"))
+        logger.info(termcolor.colored(f"DataFrame Shape: {data_csv.shape}", "green"))
+        logger.info(termcolor.colored(f"DataFrame Columns: {data_csv.columns.tolist()}", "green"))
 
         # Autoencoder: Eingabe == Ziel (Rekonstruktion der Netzwerk-Features)
         x = data_csv.to_numpy(dtype=np.float32)
         y = x.copy()
 
-        print(f"[*] Training model with {x.shape[0]} samples and {x.shape[1]} features...")
+        logger.info(termcolor.colored(f"Training model with {x.shape[0]} samples and {x.shape[1]} features...", "green"))
 
         train_model(x, y, m, epochs=10000, learning_rate=0.0001)
 
@@ -114,12 +119,11 @@ def main():
             os.makedirs("output")
 
         torch.save(m.state_dict(), "output/model.pth")
-        print("[+] PyTorch-Modell in output/model.pth gespeichert.")
+        logger.info("PyTorch model saved in output/model.pth.")
 
         with open("output/model.c", "w") as f:
             f.write(c_code)
-        print("[+] C-Modell in output/model.c gespeichert.")
-
+        logger.info("C model saved in output/model.c.")
     if args.inference:
         # scapy for packet capture and feature extraction
         from scapy.all import sniff
@@ -134,12 +138,12 @@ def main():
             output = m(x)
             diff = torch.abs(x - output)
             anomaly_score = torch.mean(diff).item()
-            print(f"[*] Difference: {diff.detach().numpy()}")
-            print(f"[*] Anomaly Score: {anomaly_score:.6f}")
+            logger.info(f"Difference: {diff.detach().numpy()}")
+            logger.info(f"Anomaly Score: {anomaly_score:.6f}")
 
         s = sniff(iface="wlan0", prn=lambda x: infer_packet(x))
 
-        print(s)
+        logger.info(s)
 
 
 if __name__ == "__main__":
