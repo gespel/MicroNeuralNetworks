@@ -94,6 +94,18 @@ typedef struct {
     Layer layers[MNN_MAX_LAYERS];
 } MicroNeuralNetwork;
 
+typedef struct {
+    int input_size;
+    int output_size;
+    int weights[MNN_MAX_LAYER_SIZE * MNN_MAX_LAYER_SIZE];
+    int biases[MNN_MAX_LAYER_SIZE];
+} BNNLayer;
+
+typedef struct {
+    int num_layers;
+    BNNLayer layers[MNN_MAX_LAYERS];
+} BinaryNeuralNetwork;
+
 static inline float relu(float x) {
     return x > 0 ? x : 0;
 }
