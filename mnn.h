@@ -151,6 +151,32 @@ static inline float *inference(MicroNeuralNetwork *mnn, float *input) {
     return current_input;
 }
 
+/*Returns a pointer into a static double-buffer; no heap allocation.
+ * NOTE: the returned pointer is only valid until the next binary_inference() call. */
+static inline int *binary_inference(BinaryNeuralNetwork *bnn, int *input) {
+    static int buf[2][MNN_MAX_LAYER_SIZE];
+    int cur = 0;
+    int *current_input = input;
+
+    for (int i = 0; i < bnn->num_layers; i++) {
+        BNNLayer *layer  = &bnn->layers[i];
+        int *output = buf[cur];
+
+        for (int j = 0; j < layer->output_size; j++) {
+            output[j] = layer->biases[j];
+            for (int k = 0; k < layer->input_size; k++) {
+                output[j] += current_input[k] * layer->weights[j * layer->input_size + k];
+            }
+            output[j] = output[j] > 0 ? 1 : 0;
+        }
+        current_input = output;
+        cur ^= 1;
+    }
+    return current_input;
+}
+
+/*Returns a pointer into a static double-buffer; no heap allocation.
+ * NOTE: the returned pointer is only valid until the next optimize() call. */
 static inline void optimize(MicroNeuralNetwork *mnn, float *input, float *target, float learning_rate) {
     for (int i = mnn->num_layers - 1; i >= 0; i--) {
         Layer *layer  = &mnn->layers[i];
