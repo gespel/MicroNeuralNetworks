@@ -3,15 +3,26 @@ name = "model-generator"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 dependencies = [
     "commitizen>=4.16.5",
     "graphviz>=0.21",
+    "matplotlib>=3.11.1",
     "numpy>=2.5.1",
     "pandas>=3.0.3",
     "scapy>=2.7.0",
     "termcolor>=3.3.0",
-    "torch>=2.12.1",
+    "torch>=2.10.0",
     "torchview>=0.2.7",
     "tqdm>=4.68.4",
+    "triton-rocm>=3.6.0; sys_platform == 'linux'",
 ]
+
+[tool.uv.sources]
+torch = { index = "pytorch-rocm", marker = "sys_platform == 'linux'" }
+triton-rocm = { index = "pytorch-rocm", marker = "sys_platform == 'linux'" }
+
+[[tool.uv.index]]
+name = "pytorch-rocm"
+url = "https://download.pytorch.org/whl/rocm7.2"
+explicit = true
