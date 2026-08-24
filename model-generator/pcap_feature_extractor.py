@@ -135,6 +135,6 @@ if __name__ == "__main__":
     
     if df is not None:
         # Speichere Features als CSV
-        csv_file = f'features_{pcap_file}.csv'
+        csv_file = f'features_{pcap_file.split(".")[0]}.csv'
         df.to_csv(csv_file, index=False)
         print(f"\n[+] Features gespeichert in '{csv_file}'")
